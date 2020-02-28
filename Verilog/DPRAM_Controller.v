@@ -15,5 +15,16 @@ module DPRAM_Controller(clk, RD, WR, A, DIn, Q
 	output [15:0] DOut, Data;
 	output [9:0] Wr_A, Rd_A;
 	output Done, WE;
+	
+	always @(clk)
+		if(RD) begin
+			Rd_A = A;
+		end else if(WR) begin
+			Wr_A = A;
+			Data = DIn;
+		end
+		
+	
+	end
 
 endmodule
