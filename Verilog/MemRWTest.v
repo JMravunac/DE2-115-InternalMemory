@@ -22,7 +22,7 @@ parameter [2:0]   Idle = 3'b0, Address = 3'b001, Wr1 = 3'b010, Wr2 = 3'b111, Wr3
 parameter [2:0]   Idle2 = 3'b0, AddrImp = 3'b001, Write = 3'b010, Read = 3'b011, Check = 3'b100, Success = 3'b101, Fail = 3'b110;
 	reg [2:0] User_State;
 	reg [2:0] IT_State;
-	reg [2:0] delay, delay2;
+	reg [2:0] delay, delay2, delay3;
 	reg [9:0] testAddr;
 	reg [15:0] testData;
 
@@ -58,6 +58,8 @@ always @(negedge ar or posedge clk)
 					 begin
 						testAddr = testAddr + 1;
 						testData = testAddr * 15;
+						delay2 = 3'b0;
+						delay3 = 3'b0;
 						A = testAddr;
 						DIn = testData;
 						IT_State = Write;
@@ -68,25 +70,54 @@ always @(negedge ar or posedge clk)
 						WR = 1'b1;
 						if(delay2 > 3'b110)
 						begin
-							if(testAddr > 1023)
+							if(testAddr > 1022)
+							begin
+								testAddr = 0;
+								testData = 0;
+								
 								IT_State = Read;
+							end
 							else
 								IT_State = AddrImp;
 						end
 						else
-							delay = delay + 1;
+							delay2 = delay2 + 1;
 					 end
 					
 					Read:
 					 begin
 						WR = 1'b0;
+						delay2 = 3'b0;
+						A = testAddr;
 						RD = 1'b1;
+						if(delay3 > 3'b110)
+						begin
+							RD = 1'b0;
+							delay3 = 3'b0;
+							IT_State = Check;
+						end
+						else
+							delay3 = delay3 + 1;
 					 
 					 end
 					 
 					Check:
 					 begin
 					 
+						testData = testAddr * 15;
+						if(testData != DOut)
+							IT_State = Fail;
+						else
+						begin
+							if(testAddr > 1022)
+								IT_State = Success;
+							else
+							begin
+								testAddr = testAddr + 1;
+								IT_State = Read;
+							end
+						end
+						
 					 end
 					 
 					Success:
