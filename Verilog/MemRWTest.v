@@ -18,7 +18,7 @@ output reg [9:0] A;
 output reg [15:0] DIn;
 output reg RD, WR, Done_LED, Internal_Pass_LED, Internal_Fail_LED;
 
-parameter [2:0]   Idle = 3'b0, Address = 3'b001, Wr1 = 3'b010, Wr3 = 3'b011, Rd1 = 3'b100, Rd2 = 3'b101, Rd3 = 3'b110;
+parameter [2:0]   Idle = 3'b0, Address = 3'b001, Wr1 = 3'b010, Wr2 = 3'b111, Wr3 = 3'b011, Rd1 = 3'b100, Rd2 = 3'b101, Rd3 = 3'b110;
 	reg [2:0] User_State;
 	reg [2:0] IT_State;
 	reg [2:0] delay;
@@ -50,43 +50,62 @@ always @(negedge ar or posedge clk)
 					Idle:
 					begin
 						if(A_Button)
-							state = Address;
+							User_State = Address;
 						else if(Rd_Button)
-							state = Rd1;
+							User_State = Rd1;
 						else if(Wr_Button)
-							state = Wr1;
+							User_State = Wr1;
 					end
 					
 					Address:
 					begin
 						A = UniversalIn[9:0];
-						state = Idle;
+						User_State = Idle;
 					end
 					
 					Rd1:
 					begin
 						delay = 3'b0;
-						Rd = 1'b1;
-						state = Rd2;
+						RD = 1'b1;
+						User_State = Rd2;
 					end
 					
 					Rd2:
 					begin
 						if(delay > 3'b110)
-							state = Rd3;
+							User_State = Rd3;
 						else
 							delay = delay + 1;
 					end
 					
 					Rd3:
 					begin
-						Rd= 1'b0;
+						RD= 1'b0;
 						SevenSeg_Zero = DOut[3:0];
-						SevenSeg_One = [7:4];
-						SevenSeg_Two = [11:8];
-						SevenSeg_Three = [15:12];
-						state = Idle;
+						SevenSeg_One = DOut[7:4];
+						SevenSeg_Two = DOut[11:8];
+						SevenSeg_Three = DOut[15:12];
+						User_State = Idle;
 					end
+
+					Wr1:
+					begin
+						DIn = UniversalIn[15:0];
+						User_State = Wr2;
+					end
+
+					Wr2:
+					begin
+						WR = 1'b1;
+						User_State = Wr3;
+					end
+
+					Wr3:
+					begin
+						WR = 1'b0;
+						User_State = Idle;
+					end
+				endcase
 			 end
 	 
 	 end
