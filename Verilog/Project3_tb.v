@@ -1,7 +1,9 @@
-// Testbench 4-bit synchronous BCD counter with asynchronous reset
-// ctr_tb.v
-// Don M. Gruenbacher
-// Feb. 4, 2000
+/*
+/  Jack Mravunac
+/  Project3_tb.v
+/  Contains test bence for the internal test
+/  27 February 2020
+*/
 
 `timescale 1 ns / 1 ns
 
@@ -43,9 +45,9 @@ initial
 	#20 ar = 1'b1; // Set reset to 1
 
     #20 IT_Switch = 1'b1;
-
+	#100 A_Button = 1'b1;
+    #100 A_Button = 1'b0;
     #20 A_Button = 1'b1;
-    #5 A_Button = 0'b0;
   end
 
 
